@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(echo \"EXIT: $?\")",
+      "Bash(xargs -I{} ls \"c:/Users/Артем/Desktop/VUZ/Music Separator/musdb18/train/{}\")",
+      "Bash(C:/Python314/python.exe -m pip show ffmpeg ffmpeg-python python-ffmpeg)",
+      "Bash(C:/Python314/python.exe -m pip uninstall ffmpeg -y)",
+      "Bash(C:/Python314/python.exe test.py)",
+      "Bash(C:/Python314/python.exe -c \"import ffmpeg; print\\(ffmpeg.__file__\\); print\\(dir\\(ffmpeg\\)\\)\")",
+      "Bash(where ffprobe *)",
+      "Bash(C:/Python314/python.exe -m pip show musdb stempeg)",
+      "Read(//c/Users/Артем/AppData/Roaming/Python/Python314/site-packages/musdb/**)",
+      "Bash(python -c \"import torch; print\\('PyTorch:', torch.__version__\\); print\\('CUDA available:', torch.cuda.is_available\\(\\)\\); print\\('CUDA built with:', torch.version.cuda\\)\")",
+      "Bash(nvidia-smi)",
+      "PowerShell(nvidia-smi)",
+      "PowerShell(python --version)",
+      "PowerShell(winget install Python.Python.3.12)",
+      "PowerShell(py -3.12 -m venv \"C:\\\\Users\\\\��⥬\\\\Desktop\\\\VUZ\\\\Music Separator\\\\venv\")",
+      "Bash(py -3.12 -m venv \"C:\\\\Users\\\\Артем\\\\Desktop\\\\VUZ\\\\Music Separator\\\\venv\")",
+      "Bash(\"C:\\\\Users\\\\Артем\\\\Desktop\\\\VUZ\\\\Music Separator\\\\venv\\\\Scripts\\\\pip.exe\" install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124)",
+      "Bash(\"/c/Users/Артем/Desktop/VUZ/Music Separator/venv/Scripts/pip\" install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124)"
+    ]
+  }
+}
