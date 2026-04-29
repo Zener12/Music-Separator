@@ -176,7 +176,6 @@ class Trainer:
         for mixture, targets in loader:
             loss = self._forward(mixture, targets)
             total_loss += loss.item()
-        print(total_loss/len(loader))
         return total_loss/len(loader)
 
     def save_checkpoint(self, epoch: int, val_loss: float):
@@ -202,15 +201,19 @@ class Trainer:
         best_val_loss = float('inf')
 
         for epoch in range(start_epoch, self.config['epochs']+1):
-        # Внутри: train_epoch → eval_epoch → scheduler.step(val_loss)
+            print(f"\n=== Epoch {epoch}/{self.config['epochs']} ===")
+            print("Training...")
             train_loss = self.train_epoch(train_loader)
+            print("Evaluating...")
             val_loss = self.eval_epoch(val_loader)
-            print(f"\nEpoch {epoch}/{self.config['epochs']}   |   Train Loss: {train_loss}\n")
+            lr = self.optimizer.param_groups[0]['lr']
+            saved = ""
             self.scheduler.step(val_loss)
-        # Сохраняй checkpoint только если val_loss улучшился
             if val_loss < best_val_loss:
                 best_val_loss = val_loss
                 self.save_checkpoint(epoch, val_loss)
+                saved = " ← checkpoint saved"
+            print(f"Epoch {epoch}/{self.config['epochs']} | Train: {train_loss:.4f} | Val: {val_loss:.4f} | LR: {lr:.2e}{saved}")
 
 
 def load_checkpoint(path: str, device: str = 'cpu'):
