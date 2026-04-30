@@ -221,6 +221,7 @@ def load_checkpoint(path: str, device: str = 'cpu'):
     checkpoint = torch.load(path, map_location=device)
     model = SourceSeparationNet()
     model.load_state_dict(checkpoint['model_state_dict'])
+    model.to(device)
     return model, checkpoint
 
 
