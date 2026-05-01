@@ -2,10 +2,10 @@ import musdb
 import matplotlib.pyplot as plt
 import torch
 
-mus = musdb.DB(root='./musdb18', subsets='train', is_wav=True, download=False)
-print(f"Треков: {len(mus)}")
+# mus = musdb.DB(root='./musdb18', subsets='train', is_wav=True, download=False)
+# print(f"Треков: {len(mus)}")
 
-track = mus[0]
+# track = mus[0]
 # print(f"Название: {track.name}")
 # print(f"Частота: {track.rate} Гц")
 # print(f"Форма аудио смеси: {track.audio.shape}")
@@ -21,3 +21,7 @@ track = mus[0]
 # plt.ylabel('Амплитуда')
 # plt.show()
 # print(track.stems)
+
+dict = {'1': 2,
+        '2': 3}
+print(dict.items()[0])

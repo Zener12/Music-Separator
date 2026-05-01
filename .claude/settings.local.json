@@ -18,7 +18,10 @@
       "PowerShell(py -3.12 -m venv \"C:\\\\Users\\\\��⥬\\\\Desktop\\\\VUZ\\\\Music Separator\\\\venv\")",
       "Bash(py -3.12 -m venv \"C:\\\\Users\\\\Артем\\\\Desktop\\\\VUZ\\\\Music Separator\\\\venv\")",
       "Bash(\"C:\\\\Users\\\\Артем\\\\Desktop\\\\VUZ\\\\Music Separator\\\\venv\\\\Scripts\\\\pip.exe\" install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124)",
-      "Bash(\"/c/Users/Артем/Desktop/VUZ/Music Separator/venv/Scripts/pip\" install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124)"
+      "Bash(\"/c/Users/Артем/Desktop/VUZ/Music Separator/venv/Scripts/pip\" install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:arxiv.org)"
     ]
   }
 }

@@ -16,3 +16,6 @@ __pycache__/
 
 # Cache
 cache/
+
+# Результаты
+results_demo/
