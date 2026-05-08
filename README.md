@@ -16,7 +16,7 @@
 python -m venv venv
 venv\Scripts\activate        # Windows
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
-pip install librosa musdb scikit-learn mir_eval soundfile
+pip install librosa musdb scikit-learn mir_eval soundfile gradio mlflow
 ```
 
 Датасет положить в `./musdb18/` (формат WAV).
@@ -33,7 +33,10 @@ pip install librosa musdb scikit-learn mir_eval soundfile
 ├── evaluate.py          # SDR-оценка нейросети
 ├── nmf_baseline.py      # Supervised NMF baseline
 ├── demo.py              # Разделение трека и сохранение WAV
-├── checkpoints/         # Веса модели
+├── export_ONNX.py       # Экспорт модели в ONNX формат
+├── log_results.py       # Логирование метрик в MLflow
+├── gradio_demo.py       # Веб-интерфейс для разделения треков
+├── checkpoints/         # Веса модели (.pt и .onnx)
 └── cache/               # Кэш спектрограмм (создаётся автоматически)
 ```
 
@@ -62,6 +65,24 @@ python demo.py
 ```bash
 python nmf_baseline.py
 ```
+
+### Экспорт в ONNX
+```bash
+python export_ONNX.py
+```
+Сохраняет модель в `./checkpoints/model.onnx` для инференса без PyTorch.
+
+### Логирование результатов в MLflow
+```bash
+python log_results.py
+mlflow ui  # открыть браузер на localhost:5000
+```
+
+### Веб-интерфейс (Gradio)
+```bash
+python gradio_demo.py
+```
+Загрузи WAV-файл в браузере и получи 4 разделённых источника.
 
 ---
 

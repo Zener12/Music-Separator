@@ -19,3 +19,6 @@ cache/
 
 # Результаты
 results_demo/
+
+# MLFlow
+mlruns/
