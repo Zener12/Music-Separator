@@ -5,6 +5,9 @@ from train import load_checkpoint
 from evaluate import evaluate_model
 
 def main():
+    # MLFlow не смог распознать кириллицу в пути (проблема в имени пользователя)
+    mlflow.set_tracking_uri("./mlruns")
+
     checkpoint_path = './checkpoints/checkpoint_epoch_48.pt'
     musdb_root      = './musdb18'
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
