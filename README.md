@@ -105,7 +105,7 @@ U-Net превосходит NMF baseline на ~3 dB по всем источн�
 | Параметр | Значение |
 |----------|----------|
 | Epochs | 50 |
-| Batch size | 8 |
+| Batch size | 4 |
 | Learning rate | 1e-3 → 7.81e-6 (ReduceLROnPlateau) |
 | Loss | 0.9 × L1 + 0.1 × SDR |
 | GPU | NVIDIA GTX 1650, 4 GB VRAM |

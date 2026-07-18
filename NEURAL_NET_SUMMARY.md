@@ -313,7 +313,7 @@ CONFIG = {
     'musdb_root':     './musdb18',
     'checkpoint_dir': './checkpoints',
     'epochs':         50,
-    'batch_size':     8,       # GTX 1650 4GB VRAM
+    'batch_size':     4,       # GTX 1650 4GB VRAM
     'lr':             1e-3,
     'lr_patience':    5,       # эпох до уменьшения lr
     'l1_weight':      0.9,
