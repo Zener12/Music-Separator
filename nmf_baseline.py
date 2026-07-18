@@ -1,77 +1,20 @@
-"""
-nmf_baseline.py
-
-Классический baseline — NMF (Non-negative Matrix Factorization).
-
-Зачем нужен baseline?
-  Без baseline непонятно, насколько хороша нейросеть.
-  Если нейросеть даёт 3 dB, а NMF — 2.5 dB, прирост небольшой.
-  Если NMF даёт 1 dB — нейросеть явно полезна.
-
-Что такое NMF:
-  Разложение матрицы V ≈ W × H, где все элементы ≥ 0.
-  V — спектрограмма (freq × time)
-  W — "словарь" спектральных паттернов (freq × n_components)
-  H — "активации": когда каждый паттерн активен (n_components × time)
-
-  Идея: каждый инструмент имеет характерный спектральный профиль (W),
-  который включается и выключается во времени (H).
-
-Supervised NMF (наш подход):
-  1. Обучаем отдельный W для каждого источника на чистых стемах
-  2. При разделении смеси: фиксируем W, находим H для смеси
-  3. Реконструируем каждый источник через его W и H
-  4. Wiener-маска для подавления "перекрёстных" артефактов
-
-Ограничение NMF: он не знает семантику. W_vocals не знает,
-что это вокал — это просто паттерн. Поэтому supervised подход
-(обучение на чистых стемах) критически важен.
-"""
-
 import librosa
 import numpy as np
 import musdb
 import mir_eval
 from sklearn.decomposition import NMF
-from joblib import Parallel, delayed
 from pathlib import Path
 
 from evaluate import compute_sdr
-from preprocessing import audio_to_spectrogram, denormalize, spectrogram_to_audio, log_magnitude, N_FFT, HOP_LENGTH
+from preprocessing import audio_to_spectrogram, denormalize, spectrogram_to_audio, N_FFT, HOP_LENGTH
 from data_loader import SOURCES
 
-N_COMPONENTS = 16   # компонент на каждый источник
+N_COMPONENTS = 16
 MAX_ITER     = 500
 SAMPLE_RATE  = 22050
 
 
-def _fit_source(source, specs):
-    V = np.concatenate(specs, axis=1)
-    nmf = NMF(n_components=N_COMPONENTS, init='nndsvda', max_iter=MAX_ITER)
-    nmf.fit(V.T)
-    print(f"  {source}: готово")
-    return nmf.components_.T
-
-
 def train_nmf_dictionaries(n_tracks: int = None):
-    """
-    Обучает словарь W для каждого источника на обучающих треках.
-
-    Алгоритм:
-      Для каждого источника собираем спектрограммы всех треков
-      по оси времени → одна большая матрица → NMF.
-
-    sklearn NMF:
-      nmf = NMF(n_components=N_COMPONENTS, init='nndsvda')
-      nmf.fit(V.T)   ← sklearn ожидает (samples, features)
-      nmf.components_  ← это H^T, shape (n_components, freq)
-                          нам нужно W, поэтому .T → (freq, n_components)
-
-    init='nndsvda' — детерминированная инициализация, лучше сходится
-    чем случайная ('random').
-
-    Вернуть: dict {source_name: W_matrix shape (freq_bins, n_components)}
-    """
     cache_dir = Path('./cache')
     total = len(list(cache_dir.glob('*_mix.npy')))
     n = n_tracks if n_tracks else total
@@ -97,27 +40,7 @@ def train_nmf_dictionaries(n_tracks: int = None):
     return dictionaries
 
 
-
 def separate_with_nmf(mix_audio: np.ndarray, dictionaries: dict):
-    """
-    Разделяет смесь используя обученные словари.
-
-    Алгоритм:
-      1. STFT смеси → mix_mag (freq × time)
-      2. Конкатенируй все словари по оси компонент:
-         W_all = [W_vocals | W_drums | W_bass | W_other]
-         shape: (freq, n_components * n_sources)
-      3. NMF с фиксированным W: найди H для mix_mag
-         В sklearn: nmf.fit_transform(mix_mag.T, W=W_all.T, H=random_init)
-      4. Для каждого источника:
-         V_src = W_src @ H_src  ← реконструкция этого источника
-         V_total = W_all @ H    ← реконструкция всей смеси
-         mask = V_src / (V_total + eps)  ← Wiener-маска
-         separated_mag = mask * mix_mag
-      5. Примени фазу смеси → spectrogram_to_audio
-
-    Вернуть: dict {source_name: audio}
-    """
     magnitude, phase = audio_to_spectrogram(mix_audio, N_FFT, HOP_LENGTH)
     magnitude = magnitude.astype(np.float32)
     W_all = np.concatenate([dictionaries[source] for source in SOURCES], axis=1)
@@ -129,9 +52,8 @@ def separate_with_nmf(mix_audio: np.ndarray, dictionaries: dict):
     result = {}
     for s_idx, source in enumerate(SOURCES):
         start = s_idx * N_COMPONENTS
-        H_src = activations[:, start:start + N_COMPONENTS].T # (n_components, time)
+        H_src = activations[:, start:start + N_COMPONENTS].T
         W_src = dictionaries[source]
-
         V_src = W_src @ H_src
         V_total = W_all @ activations.T
         mask = V_src / (V_total + 1e-8)
@@ -141,11 +63,8 @@ def separate_with_nmf(mix_audio: np.ndarray, dictionaries: dict):
 
     return result
 
+
 def evaluate_nmf(musdb_root: str, dictionaries: dict, n_tracks: int = None):
-    """
-    Оценка NMF baseline по SDR на тестовом сете.
-    Структура аналогична evaluate.py — посмотри туда.
-    """
     test_db = musdb.DB(musdb_root, subsets='test', is_wav=True)
     tracks = list(test_db) # type: ignore
 
@@ -160,16 +79,16 @@ def evaluate_nmf(musdb_root: str, dictionaries: dict, n_tracks: int = None):
         preds = separate_with_nmf(resample, dictionaries)
         for source in SOURCES:
             s_res = librosa.resample(track.targets[source].audio.mean(axis=1),
-                                     orig_sr = track.rate,
-                                     target_sr = SAMPLE_RATE)
+                                     orig_sr=track.rate,
+                                     target_sr=SAMPLE_RATE)
             sdr = compute_sdr(s_res, preds[source])
             all_sdrs[source].append(sdr)
-    
+
     mean_sdr = {source: np.mean(all_sdrs[source]) for source in SOURCES}
     mean_sdr['average'] = np.mean(list(mean_sdr.values()))
 
     for source, sdr in mean_sdr.items():
-      print(f"  {source:10s}: {sdr:.2f} dB")
+        print(f"  {source:10s}: {sdr:.2f} dB")
 
     return mean_sdr
 
